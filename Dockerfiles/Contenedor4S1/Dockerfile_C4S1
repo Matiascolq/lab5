@@ -1,0 +1,30 @@
+# Imagen base de Ubuntu 22.10
+FROM ubuntu:22.10
+
+# Copia el archivo sources.list al contenedor
+COPY sources.list /etc/apt/sources.list
+
+# Actualiza el sistema e instala las dependencias necesarias
+RUN apt-get update && apt-get install -y \
+    tshark \
+    openssh-client \
+    openssh-server \
+    whois
+# Configuración adicional:
+# - tshark: Herramienta para captura y análisis de tráfico de red.
+# - openssh-client: Cliente SSH para conexiones seguras.
+# - openssh-server: Servidor SSH para aceptar conexiones remotas.
+# - whois: Utilidad para consultar información de dominios.
+
+# Configuración para el usuario "matias"
+RUN mkdir -p /var/run/sshd && \
+    useradd -m matias && \
+    echo 'matias:matias' | chpasswd && \
+    sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    echo 'root:root' | chpasswd
+
+# Expone el puerto SSH
+EXPOSE 22
+
+# Comando para iniciar el daemon SSH
+CMD ["/usr/sbin/sshd", "-D"]

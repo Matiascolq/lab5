@@ -1,0 +1,30 @@
+# Base image: Ubuntu 20.10
+FROM ubuntu:20.10
+
+# Copia el archivo de fuentes (si aplica)
+COPY sources.list /etc/apt/sources.list
+
+# Actualiza e instala las dependencias necesarias
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    zlib1g-dev \
+    libssl-dev \
+    wget
+
+# Descarga y extrae el código fuente de OpenSSH
+COPY ./openssh-8.3p1.tar.gz ./
+RUN tar zxvf openssh-8.3p1.tar.gz
+
+# Ajusta la versión dentro del código fuente (si es necesario)
+RUN sed -i 's/8.3/?/' ./openssh-8.3p1/version.h
+
+# Establece el directorio de trabajo
+WORKDIR /openssh-8.3p1
+
+# Configura y compila OpenSSH
+RUN ./configure && \
+    make && \
+    make install
+
+# Mantén el contenedor corriendo
+CMD ["tail", "-f", "/dev/null"]
